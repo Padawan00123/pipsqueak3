@@ -17,7 +17,7 @@ from ..packages.commands import command
 from ..packages.context import Context
 from ..packages.permissions import require_channel, require_permission, TECHRAT
 from loguru import logger
-from importlib import metadata
+from os import path
 import src
 from importlib import resources
 import toml
@@ -47,8 +47,32 @@ async def cmd_rehash(context: Context):
 
 @command("version")
 async def cmd_version(ctx: Context):
-    # FIXME pull from pyproject.toml somehow?
+    """
+    This function shows the current version of the bot, as represented in pyproject.toml
+
+    Args:
+        ctx (Context): Context of the command
+
+    Returns:
+        msg (str): Result of the Context::reply call
+    """
+    # FIXME Rather than pull the entire toml file, just pull what we need.
+
     try:
-        return await ctx.reply(metadata.version("pipsqueak3"))
-    except metadata.PackageNotFoundError:
-        return await ctx.reply("version ?.?.? (dirty)")
+        # Load the TOML file if it exists
+        if path.isfile("pyproject.toml"):
+            toml_data = toml.load("pyproject.toml")
+
+            # Send the version we find.  If this doesn't work, it will raise a KeyError
+            return await ctx.reply("Version " + toml_data["tool"]["poetry"]["version"])
+        else:
+            # If we can't find the file, raise a FileNotFoundError
+            raise FileNotFoundError("Toml file doesn't exist.")
+    except FileNotFoundError:
+        # Handle a custom log message if we can't find the file.
+        logger.warning("Unable to find pyproject.toml when issuing version command")
+    except KeyError:
+        logger.warning("Unable to find key [\"tool\"][\"poetry\"][\"version\"] in toml when issuing version command")
+
+    # Return a default version string.  We will only hit this if we see an exception above.
+    return await ctx.reply("version ?.?.? (dirty)")
