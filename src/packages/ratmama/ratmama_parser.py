@@ -12,8 +12,13 @@ See LICENSE.md
 """
 
 import re
+import sys
 from loguru import logger
-from typing import Optional, Dict, TypedDict
+from typing import Optional, Dict
+if sys.version_info >= (3, 8):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 from src.config import CONFIG_MARKER
 from ..context import Context
 from ..rescue import Rescue
