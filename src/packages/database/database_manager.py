@@ -78,9 +78,9 @@ class DatabaseManager:
         module_config = data["database"]
 
         # Require all values to be set
-        for setting in module_config.values():
-            if not setting:
-                raise ValueError(f"[database]{setting} is required for instantiation but was empty")
+        for setting in module_config.items():
+            if not setting[1]:
+                raise ValueError(f"[database]{setting[0]} is required for instantiation but was empty")
 
         # Host
         if not isinstance(module_config["host"], str):
